@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <title>Verify Address</title>
+</head>
+
+<body>
+
+<script>
+
+function showAlert(text) {
+  alert(text);
+}
+
+// Change to whatever ID you have
+var USERID = 'XXXXXXXXXXXX';
+
+function loadXMLDoc() {
+  var letters = /^[A-Za-z ]+$/;
+  var numbers = /^[0-9]+$/;
+
+  var Address1 = document.getElementById('Address1').value;
+  var Address2 = document.getElementById('Address2').value;
+
+  var City = document.getElementById('City').value;
+
+  if (!City.match(letters) && City.length > 0) {
+    alert("City must contain only letters");
+    return;
+  }
+
+  var State = document.getElementById('State').value;
+  var Zip5 = document.getElementById('Zip').value.substring(0,5);
+  var Zip4 = document.getElementById('Zip').value.substring(6);
+
+  if (!Zip5.match(numbers) && Zip5.length > 0) {
+    alert("Zip Code must contain only numbers");
+    return;
+  }
+
+  if (!Zip4.match(numbers) && Zip4.length > 0) {
+    alert("Zip Code must contain only numbers");
+    return;
+  }
+
+  var URL = "http://production.shippingapis.com/ShippingAPITest.dll?API=Verify&XML=<AddressValidateRequest USERID='"+USERID+"'><Address ID='0'><Address1>"+Address1+"</Address1><Address2>"+Address2+"</Address2><City>"+City+"</City><State>"+State+"</State><Zip5>"+Zip5+"</Zip5><Zip4>"+Zip4+"</Zip4></Address></AddressValidateRequest>";
+
+  var xmlhttp = new XMLHttpRequest();
+
+  xmlhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      doWork(this);
+    }
+  };
+
+  xmlhttp.open("GET", URL , true);
+  xmlhttp.send();
+}
+
+function doWork(xml) {
+  var x, i, xmlDoc;
+  xmlDoc = xml.responseXML;
+
+  if (xmlDoc.getElementsByTagName("Error")["0"] != undefined) {
+    eDescription = xmlDoc.getElementsByTagName("Description")["0"].innerHTML;
+
+    if (eDescription.length != 0) {
+      showAlert(eDescription);
+      console.log(eDescription);
+      return;
+    }
+  }
+
+  addressFull = xmlDoc.getElementsByTagName("AddressValidateResponse");
+  address1 = xmlDoc.getElementsByTagName("Address1");
+  address2 = xmlDoc.getElementsByTagName("Address2");
+  city = xmlDoc.getElementsByTagName("City");
+  state = xmlDoc.getElementsByTagName("State");
+  zip5 = xmlDoc.getElementsByTagName("Zip5");
+  zip4 = xmlDoc.getElementsByTagName("Zip4");
+
+  try {
+    address1 = address1["0"].innerHTML;
+  } catch(err) {
+    address1 = "";
+  }
+
+  try {
+    address2 = address2["0"].innerHTML;
+  } catch(err) {
+    address2 = "";
+  }
+
+  try {
+    city = city["0"].innerHTML;
+  } catch(err) {
+    city = "";
+  }
+
+  try {
+    state = state["0"].innerHTML;
+  } catch(err) {
+    state = "";
+  }
+
+  try {
+    zip5 = zip5["0"].innerHTML;
+  } catch(err) {
+    zip5 = "";
+  }
+
+  try {
+    zip4 = zip4["0"].innerHTML;
+  } catch(err) {
+    zip4 = "";
+  }
+
+  document.getElementById("Address1").value = address1;
+  document.getElementById("Address2").value = address2;
+  document.getElementById("City").value = city;
+  document.getElementById("State").value = state;
+  document.getElementById("Zip").value = zip5+"-"+zip4;
+
+  document.getElementById("Address1").readOnly = "readonly";
+  document.getElementById("Address2").readOnly = "readonly";
+  document.getElementById("City").readOnly = "readOnly";
+  document.getElementById("State").disabled = "disabled";
+  document.getElementById("Zip").readOnly = "readonly";
+//  document.getElementById("outputZip4").value = zip4;
+
+  console.log(address1);
+  console.log(address2);
+  console.log(city);
+  console.log(state);
+  console.log(zip5 + "-" + zip4);
+
+  document.getElementById("nextpage").style.visibility="visible";
+}
+
+
+function sendInfo() {
+
+  window.location="./nextPage.html";
+}
+
+</script>
+
+<div style="width: 800px; margin: auto; margin-top: 100px;">
+<div class="container">
+
+  <div style="text-align: center;">
+    <h2>Address Information</h2>
+  </div>
+
+  <hr>
+
+  <div class="form-group row">
+    <label for="Address2" class="col-2 col-form-label">Street Address</label>
+    <div class="col-10">
+      <input class="form-control" type="text" maxlength="50" value="" id="Address2" required>
+    </div>
+  </div>
+
+  <div class="form-group row">
+    <label for="Address1" class="col-2 col-form-label">Apartment Number</label>
+    <div class="col-10">
+      <input class="form-control" type="text" maxlength="50" value="" id="Address1">
+    </div>
+  </div>
+
+  <div class="form-group row">
+    <label for="City" class="col-2 col-form-label">City</label>
+    <div class="col-10">
+      <input class="form-control" type="text" maxlength="50" value="" id="City">
+    </div>
+  </div>
+
+  <div class="form-group row">
+    <label for="State" class="col-2 col-form-label">State</label>
+    <div class="col-10">
+      <select class="form-control" id="State">
+          <option value="" selected disabled>Select State</option>
+          <option value="AL">AL</option>
+        	<option value="AK">AK</option>
+        	<option value="AR">AR</option>
+        	<option value="AZ">AZ</option>
+        	<option value="CA">CA</option>
+        	<option value="CO">CO</option>
+        	<option value="CT">CT</option>
+        	<option value="DC">DC</option>
+        	<option value="DE">DE</option>
+        	<option value="FL">FL</option>
+        	<option value="GA">GA</option>
+        	<option value="HI">HI</option>
+        	<option value="IA">IA</option>
+        	<option value="ID">ID</option>
+        	<option value="IL">IL</option>
+        	<option value="IN">IN</option>
+        	<option value="KS">KS</option>
+        	<option value="KY">KY</option>
+        	<option value="LA">LA</option>
+        	<option value="MA">MA</option>
+        	<option value="MD">MD</option>
+        	<option value="ME">ME</option>
+        	<option value="MI">MI</option>
+        	<option value="MN">MN</option>
+        	<option value="MO">MO</option>
+        	<option value="MS">MS</option>
+        	<option value="MT">MT</option>
+        	<option value="NC">NC</option>
+        	<option value="NE">NE</option>
+        	<option value="NH">NH</option>
+        	<option value="NJ">NJ</option>
+        	<option value="NM">NM</option>
+        	<option value="NV">NV</option>
+        	<option value="NY">NY</option>
+        	<option value="ND">ND</option>
+        	<option value="OH">OH</option>
+        	<option value="OK">OK</option>
+        	<option value="OR">OR</option>
+        	<option value="PA">PA</option>
+        	<option value="RI">RI</option>
+        	<option value="SC">SC</option>
+        	<option value="SD">SD</option>
+        	<option value="TN">TN</option>
+        	<option value="TX">TX</option>
+        	<option value="UT">UT</option>
+        	<option value="VT">VT</option>
+        	<option value="VA">VA</option>
+        	<option value="WA">WA</option>
+        	<option value="WI">WI</option>
+        	<option value="WV">WV</option>
+        	<option value="WY">WY</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="form-group row">
+    <label for="Zip" class="col-2 col-form-label">Zip Code</label>
+    <div class="col-10">
+      <input class="form-control" type="text" maxlength="50" value="" id="Zip">
+    </div>
+  </div>
+
+  <div class="form-group row">
+    <button style="margin-left: 50%;" type="submit" class="btn btn-primary" onclick="loadXMLDoc();">Verify</button>
+  </div>
+
+  <div class="form-group row">
+    <button id="nextpage" style="margin-left: 48%; visibility: hidden;" type="submit" class="btn btn-primary" onclick="sendInfo();">Next Page</button>
+  </div>
+
+</div>
+</div>
+
+</body>
+
+</html>
